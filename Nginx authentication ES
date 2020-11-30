@@ -1,0 +1,25 @@
+upstream es-server{
+  server 127.0.0.1:9100 weight=1 max_fails=2;
+  server 127.0.0.1:9201 weight=1 max_fails=2;
+  #server 127.0.0.1:9202 weight=1 max_fails=2;
+  #server 127.0.0.1:9203 weight=1 max_fails=2;
+  #server 127.0.0.1:9204 weight=1 max_fails=2;
+}
+
+geo $remote_addr $geo {
+  default 1; #1表示禁止访问
+  127.0.0.1 0; #0表示可以访问
+  192.0.0.1 0;
+}
+
+server {
+  listen  192.0.0.1:9100;
+
+  location ~* / {
+    if ( $geo  = 1 ) {
+      return 403;
+    }
+    proxy_pass http://es-server;
+  }
+
+}
